@@ -49,15 +49,7 @@ export default function HomePage() {
       <footer className="fixed bottom-0 left-0 w-full py-4 px-6 bg-gradient-to-t from-background via-background/95 to-transparent">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="text-foreground/60 text-sm">
-            by{' '}
-            <a 
-              href="https://twitter.com/9gustin" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-brand-primary hover:opacity-80 transition-opacity"
-            >
-              @9gustin
-            </a>
+            by @9gustin
           </div>
           <div className="flex gap-4">
             <a 
