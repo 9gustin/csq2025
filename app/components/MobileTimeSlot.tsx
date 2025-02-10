@@ -16,12 +16,12 @@ export function MobileTimeSlot({ timeGroup, isAfterMidnight, isUpNext, onToggleS
 
   return (
     <div className={`
-      p-4 rounded-lg mb-4 border shadow-sm
-      ${isAfterMidnight ? 'bg-gray-50' : 'bg-white'}
-      ${isUpNext ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200'}
+      p-4 rounded-lg mb-4 border card
+      ${isAfterMidnight ? 'bg-card-background/5' : ''}
+      ${isUpNext ? 'bg-brand-secondary/5 border-brand-secondary/20' : ''}
     `}>
-      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-200">
-        <div className="text-xl font-bold text-gray-900">
+      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-card-border">
+        <div className="text-xl font-bold text-foreground">
           {timeRange}
           {isAfterMidnight && ' *'}
           {isUpNext && ' 🔜'}
@@ -31,10 +31,13 @@ export function MobileTimeSlot({ timeGroup, isAfterMidnight, isUpNext, onToggleS
         {shows?.map((show) => (
           <button
             key={`${show.time}-${show.band}`}
-            className="w-full flex items-start gap-3 text-left hover:bg-gray-50 p-3 rounded-lg transition-colors"
+            className="w-full flex items-start gap-3 text-left hover:bg-card-background/5 p-3 rounded-lg transition-colors"
             onClick={() => onToggleShow(show)}
           >
-            <div className="mt-1 flex-shrink-0">
+            <div 
+              className="mt-1 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 type="checkbox"
                 checked={isSelected(show)}
@@ -42,19 +45,19 @@ export function MobileTimeSlot({ timeGroup, isAfterMidnight, isUpNext, onToggleS
                   e.stopPropagation();
                   onToggleShow(show);
                 }}
-                className="h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                className="h-5 w-5 text-brand-primary rounded border-card-border focus:ring-brand-primary"
               />
             </div>
             <div className="flex-grow">
-              <div className="font-semibold text-base text-gray-900 mb-1">
+              <div className="font-semibold text-base text-foreground mb-1">
                 {show.band}
               </div>
               <div className="flex justify-between items-center">
-                <div className="text-sm font-medium text-gray-600">
+                <div className="text-sm font-medium text-foreground/60">
                   {show.location}
                 </div>
                 {show.time !== startTime && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-foreground/40">
                     {new Date(show.time).toLocaleTimeString('es-AR', {
                       hour: '2-digit',
                       minute: '2-digit',

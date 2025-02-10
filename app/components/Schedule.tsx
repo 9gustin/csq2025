@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { DaySwitch } from './DaySwitch';
 import { MobileTimeSlot } from './MobileTimeSlot';
 import { Show, TimeGroup } from '@/types';
+import { ALL_SHOWS } from '@/app/data';
+import { useSearchParams } from 'next/navigation';
+import { SearchInput } from './Schedule/SearchInput';
 
 type ScheduleProps = {
   data: Show[];
@@ -62,12 +65,38 @@ function groupShowsByTimeWindow(shows: Show[], formatTime: (iso: string) => stri
   return groups;
 }
 
+function SearchIcon() {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="20" 
+      height="20" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className="h-5 w-5 text-foreground/40"
+    >
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  );
+}
+
 function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showOnlyAgenda, setShowOnlyAgenda] = useState(false);
+  const [showOnlyAgenda, setShowOnlyAgenda] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem(`cosquin-rock-2024-show-only-agenda-day-${day}`);
+    return saved ? JSON.parse(saved) : false;
+  });
   const { selectedShows, toggleShow, isSelected, clearAgenda } = useAgenda();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'list'>('table');
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
   useEffect(() => {
     const handleResize = () => {
@@ -87,6 +116,13 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem(
+      `cosquin-rock-2024-show-only-agenda-day-${day}`,
+      JSON.stringify(showOnlyAgenda)
+    );
+  }, [showOnlyAgenda, day]);
+
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('es-AR', {
       hour: '2-digit',
@@ -100,12 +136,18 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
       return new Date(a.time).getTime() - new Date(b.time).getTime();
     });
 
+    if (searchTerm.trim()) {
+      shows = shows.filter(show => 
+        show.band.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
     if (showOnlyAgenda) {
       shows = shows.filter(show => isSelected(show));
     }
 
     return shows;
-  }, [data, showOnlyAgenda, isSelected]);
+  }, [data, showOnlyAgenda, isSelected, searchTerm]);
 
   const locations = [...new Set(data.map(show => show.location))];
 
@@ -117,208 +159,276 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
     return groupShowsByTimeWindow(sortedShows, formatTime);
   }, [sortedShows]);
 
+  const findShowsInOtherDay = (term: string) => {
+    const otherDay = day === 1 ? 2 : 1;
+    const otherDayShows = ALL_SHOWS[otherDay];
+    
+    return otherDayShows.filter(show => 
+      show.band.toLowerCase().includes(term.toLowerCase())
+    );
+  };
+
+  const otherDayResults = useMemo(() => {
+    if (!searchTerm.trim() || sortedShows.length > 0) return [];
+    return findShowsInOtherDay(searchTerm);
+  }, [searchTerm, sortedShows.length, day]);
+
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <Link 
-            href="/"
-            className="text-gray-600 hover:text-gray-900"
-          >
-            ← Inicio
-          </Link>
-          <DaySwitch />
-        </div>
+    <>
+      <div className="flex justify-between items-center mb-8">
+        <Link 
+          href="/"
+          className="text-brand-primary text-lg font-semibold hover:bg-brand-primary/10 px-3 py-1 rounded-lg transition-colors -ml-3"
+        >
+          ← Inicio
+        </Link>
+        <DaySwitch />
+      </div>
 
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">
-          {title}
-        </h1>
-        <h2 className="text-xl text-center mb-8 text-gray-600">
-          {date}
-        </h2>
+      <h1 className="text-4xl font-bold text-center mb-4 text-foreground">
+        {title}
+      </h1>
+      <h2 className="text-xl text-center mb-8 text-foreground/60">
+        {date}
+      </h2>
 
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="text-sm text-gray-600 order-2 sm:order-1">
+      <div className="mb-6 space-y-4">
+        <SearchInput 
+          value={searchTerm} 
+          onChange={setSearchTerm}
+          resultsCount={sortedShows.length}
+        />
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="text-sm text-foreground/60 order-2 sm:order-1">
             {selectedShows.length} shows seleccionados
+            {searchTerm && (
+              <span className="ml-2">
+                • {sortedShows.length} resultados
+              </span>
+            )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
             {selectedShows.length > 0 && (
               <button
                 onClick={() => setShowClearConfirm(true)}
-                className="px-4 py-2 rounded-lg font-medium text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-white"
+                className="secondary-button"
               >
-                Limpiar Agenda
+                Limpiar Día {day}
               </button>
             )}
             <button
               onClick={() => setShowOnlyAgenda(!showOnlyAgenda)}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium ${
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg font-medium transition-colors ${
                 showOnlyAgenda 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-white text-gray-700 border border-gray-300'
+                  ? 'bg-card-background text-foreground border border-card-border' 
+                  : 'brand-button'
               }`}
             >
               {showOnlyAgenda ? 'Ver Todo' : 'Ver Mi Agenda'}
             </button>
           </div>
         </div>
-        
-        {viewMode === 'table' ? (
-          <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full bg-white shadow-lg rounded-lg">
-              <thead>
-                <tr className="bg-gray-800 text-white">
-                  <th className="sticky left-0 bg-gray-800 px-6 py-3 text-left">Hora</th>
-                  {locations.map((location) => (
-                    <th key={location} className="px-6 py-3 text-left">
-                      {location}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {sortedShows?.map((show) => {
-                  const showsAtSameTime = sortedShows.filter(
-                    (s) => s.time === show.time
+      </div>
+      
+      {viewMode === 'table' ? (
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full bg-card-background shadow-lg rounded-lg">
+            <thead>
+              <tr className="bg-card-background border-b border-card-border">
+                <th className="sticky left-0 bg-card-background px-6 py-3 text-left text-foreground/60">Hora</th>
+                {locations.map((location) => (
+                  <th key={location} className="px-6 py-3 text-left text-foreground/60">
+                    {location}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-card-border">
+              {sortedShows?.map((show) => {
+                const showsAtSameTime = sortedShows.filter(
+                  (s) => s.time === show.time
+                );
+                
+                if (showsAtSameTime[0] === show) {
+                  const isAfterMidnight = new Date(show.time).getHours() < 12;
+                  const showDate = new Date(show.time);
+                  const isUpNext = isShowDay ? (
+                    showDate.getTime() - currentTime.getTime() <= 30 * 60 * 1000 &&
+                    showDate.getTime() > currentTime.getTime()
+                  ) : false;
+
+                  return (
+                    <tr 
+                      key={`${show.time}-${show.band}`}
+                      className={`
+                        hover:bg-card-background/5
+                        ${isAfterMidnight ? 'bg-card-background/5' : ''}
+                        ${isUpNext ? 'bg-brand-secondary/5' : ''}
+                      `}
+                    >
+                      <td className={`
+                        sticky left-0 
+                        ${isAfterMidnight ? 'bg-card-background/5' : 'bg-card-background'}
+                        ${isUpNext ? 'bg-brand-secondary/5' : ''}
+                        px-6 py-4 whitespace-nowrap font-medium text-foreground
+                      `}>
+                        {formatTime(show.time)}
+                        {isAfterMidnight && ' *'}
+                        {isUpNext && ' 🔜'}
+                      </td>
+                      {locations.map((location) => {
+                        const showAtLocation = showsAtSameTime.find(
+                          (s) => s.location === location
+                        );
+                        return (
+                          <td
+                            key={location}
+                            className={`
+                              px-6 py-4 whitespace-nowrap text-foreground/60
+                              ${showAtLocation ? 'font-medium text-foreground' : ''}
+                              ${isUpNext ? 'text-foreground' : ''}
+                              ${showAtLocation ? 'cursor-pointer hover:bg-card-background/5' : ''}
+                            `}
+                            onClick={() => {
+                              if (showAtLocation) {
+                                toggleShow(showAtLocation);
+                              }
+                            }}
+                          >
+                            {showAtLocation && (
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected(showAtLocation)}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    toggleShow(showAtLocation);
+                                  }}
+                                  className="h-4 w-4 text-brand-primary rounded border-card-border focus:ring-brand-primary"
+                                />
+                                <span 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleShow(showAtLocation);
+                                  }}
+                                >
+                                  {showAtLocation.band}
+                                </span>
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
                   );
-                  
-                  if (showsAtSameTime[0] === show) {
-                    const isAfterMidnight = new Date(show.time).getHours() < 12;
-                    const showDate = new Date(show.time);
-                    const isUpNext = isShowDay ? (
-                      showDate.getTime() - currentTime.getTime() <= 30 * 60 * 1000 &&
-                      showDate.getTime() > currentTime.getTime()
-                    ) : false;
-
-                    return (
-                      <tr 
-                        key={`${show.time}-${show.band}`}
-                        className={`
-                          ${isAfterMidnight ? 'bg-gray-50' : ''}
-                          ${isUpNext ? 'bg-yellow-50' : ''}
-                        `}
-                      >
-                        <td className={`
-                          sticky left-0 
-                          ${isAfterMidnight ? 'bg-gray-50' : 'bg-white'}
-                          ${isUpNext ? 'bg-yellow-50' : ''}
-                          px-6 py-4 whitespace-nowrap font-medium text-gray-900
-                        `}>
-                          {formatTime(show.time)}
-                          {isAfterMidnight && ' *'}
-                          {isUpNext && ' 🔜'}
-                        </td>
-                        {locations.map((location) => {
-                          const showAtLocation = showsAtSameTime.find(
-                            (s) => s.location === location
-                          );
-                          return (
-                            <td
-                              key={location}
-                              className={`
-                                px-6 py-4 whitespace-nowrap text-gray-700
-                                ${showAtLocation ? 'font-medium' : ''}
-                                ${isUpNext ? 'text-gray-900' : ''}
-                                ${showAtLocation ? 'cursor-pointer hover:bg-gray-50' : ''}
-                              `}
-                              onClick={() => {
-                                if (showAtLocation) {
-                                  toggleShow(showAtLocation);
-                                }
-                              }}
-                            >
-                              {showAtLocation && (
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected(showAtLocation)}
-                                    onChange={() => toggleShow(showAtLocation)}
-                                    className="h-4 w-4 text-indigo-600 rounded"
-                                  />
-                                  <span>{showAtLocation.band}</span>
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  }
-                  return null;
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="md:hidden">
-            {timeGroups.map((group) => {
-              if (group.shows.length === 0) return null;
-              
-              const firstShow = group.shows[0];
-              const showDate = new Date(firstShow.time);
-              const isAfterMidnight = showDate.getHours() < 12;
-              const isUpNext = isShowDay ? (
-                showDate.getTime() - currentTime.getTime() <= 30 * 60 * 1000 &&
-                showDate.getTime() > currentTime.getTime()
-              ) : false;
-
-              return (
-                <MobileTimeSlot
-                  key={group.startTime}
-                  timeGroup={group}
-                  isAfterMidnight={isAfterMidnight}
-                  isUpNext={isUpNext}
-                  onToggleShow={toggleShow}
-                  isSelected={isSelected}
-                />
-              );
-            })}
-          </div>
-        )}
-        
-        <div className="mt-4 space-y-1 text-sm">
-          <div className="text-gray-600">
-            * Shows después de medianoche ({nextDayDate})
-          </div>
-          {isShowDay && (
-            <div className="text-gray-600">
-              🔜 Próximos 30 minutos
-            </div>
-          )}
+                }
+                return null;
+              })}
+            </tbody>
+          </table>
         </div>
+      ) : (
+        <div className="md:hidden">
+          {timeGroups.map((group) => {
+            if (group.shows.length === 0) return null;
+            
+            const firstShow = group.shows[0];
+            const showDate = new Date(firstShow.time);
+            const isAfterMidnight = showDate.getHours() < 12;
+            const isUpNext = isShowDay ? (
+              showDate.getTime() - currentTime.getTime() <= 30 * 60 * 1000 &&
+              showDate.getTime() > currentTime.getTime()
+            ) : false;
 
-        {/* Confirmation Modal */}
-        {showClearConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                ¿Estás seguro?
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Esta acción eliminará todos los shows seleccionados de tu agenda.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowClearConfirm(false)}
-                  className="px-4 py-2 rounded-lg font-medium text-gray-700 border border-gray-300"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {
-                    clearAgenda();
-                    setShowClearConfirm(false);
-                  }}
-                  className="px-4 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700"
-                >
-                  Confirmar
-                </button>
-              </div>
-            </div>
+            return (
+              <MobileTimeSlot
+                key={group.startTime}
+                timeGroup={group}
+                isAfterMidnight={isAfterMidnight}
+                isUpNext={isUpNext}
+                onToggleShow={toggleShow}
+                isSelected={isSelected}
+              />
+            );
+          })}
+        </div>
+      )}
+      
+      <div className="mt-4 space-y-1 text-sm">
+        <div className="text-foreground/60">
+          * Shows después de medianoche ({nextDayDate})
+        </div>
+        {isShowDay && (
+          <div className="text-foreground/60">
+            🔜 Próximos 30 minutos
           </div>
         )}
       </div>
-    </div>
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-card-background rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-foreground mb-4">
+              ¿Estás seguro?
+            </h3>
+            <p className="text-foreground/60 mb-6">
+              Esta acción eliminará todos los shows seleccionados de tu agenda.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 rounded-lg font-medium text-foreground border border-card-border"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  clearAgenda();
+                  setShowClearConfirm(false);
+                }}
+                className="secondary-button"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {searchTerm && sortedShows.length === 0 && otherDayResults.length > 0 && (
+        <div className="mt-8 p-4 rounded-lg bg-card-background border border-card-border">
+          <h3 className="text-lg font-medium text-foreground mb-4">
+            Encontrado en Día {day === 1 ? '2' : '1'}
+          </h3>
+          <div className="space-y-3">
+            {otherDayResults.map(show => (
+              <div 
+                key={`${show.time}-${show.band}`}
+                className="flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium text-foreground">{show.band}</div>
+                  <div className="text-sm text-foreground/60">
+                    {new Date(show.time).toLocaleTimeString('es-AR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })} - {show.location}
+                  </div>
+                </div>
+                <Link
+                  href={`/dia${day === 1 ? '2' : '1'}?search=${encodeURIComponent(searchTerm)}`}
+                  className="px-4 py-2 rounded-lg text-brand-primary text-sm font-medium border border-brand-primary/20 hover:bg-brand-primary/10 transition-colors"
+                >
+                  Ver en Día {day === 1 ? '2' : '1'}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

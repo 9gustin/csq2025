@@ -1,40 +1,43 @@
+'use client';
+
 import Link from 'next/link';
+import { PageLayout } from './components/PageLayout';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-8 text-gray-900">
-          Cosquín Rock 2024
+    <PageLayout>
+      <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-6xl sm:text-7xl font-bold mb-6 text-foreground tracking-tight">
+          Cosquín Rock
+          <span className="text-brand-primary"> 2024</span>
         </h1>
-        <div className="text-center space-y-4">
-          <p className="text-xl text-gray-600 mb-12">
-            15 y 16 de Febrero
-          </p>
-          
-          <div className="grid gap-6 max-w-xl mx-auto">
-            <Link 
-              href="/dia1"
-              className="block p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Día 1</h2>
-              <p className="text-gray-600">15 de Febrero</p>
-            </Link>
+        
+        <p className="text-xl text-foreground/60 mb-12 max-w-2xl">
+          Organizá tu agenda para los dos días del festival más importante de Latinoamérica
+        </p>
 
-            <Link 
-              href="/dia2"
-              className="block p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Día 2</h2>
-              <p className="text-gray-600">16 de Febrero</p>
-            </Link>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs sm:max-w-md">
+          <Link 
+            href="/dia1"
+            className="flex-1 px-8 py-4 rounded-xl font-semibold text-lg bg-card-background border border-card-border hover:bg-card-background/50 transition-colors group"
+          >
+            <div className="text-foreground/60 mb-1">15 de Febrero</div>
+            <div className="text-brand-primary text-2xl font-bold">Día 1</div>
+          </Link>
 
-          <div className="mt-12 text-sm text-gray-500">
-            <p>Selecciona un día para ver la programación y armar tu agenda</p>
-          </div>
+          <Link 
+            href="/dia2"
+            className="flex-1 px-8 py-4 rounded-xl font-semibold text-lg bg-card-background border border-card-border hover:bg-card-background/50 transition-colors group"
+          >
+            <div className="text-foreground/60 mb-1">16 de Febrero</div>
+            <div className="text-brand-primary text-2xl font-bold">Día 2</div>
+          </Link>
         </div>
+
+        <div className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-brand-primary/10 to-transparent -z-10" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-secondary/5 blur-3xl rounded-full -z-10" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand-primary/5 blur-3xl rounded-full -z-10" />
       </div>
-    </div>
+    </PageLayout>
   );
 } 

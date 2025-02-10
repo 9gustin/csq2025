@@ -3,19 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --brand-primary: #00833f;
+  --brand-secondary: #FF3233;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card-background: #171717;
+  --card-border: #262626;
+  --hover-background: #262626;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: system-ui, -apple-system, sans-serif; */
+}
+
+.brand-button {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors;
+  background-color: var(--brand-primary);
+  color: white;
+  opacity: 0.9;
+}
+
+.brand-button:hover {
+  opacity: 1;
+}
+
+.secondary-button {
+  @apply px-4 py-2 rounded-lg font-medium transition-colors;
+  background-color: var(--brand-secondary);
+  color: white;
+}
+
+.secondary-button:hover {
+  filter: brightness(110%);
+}
+
+.card {
+  background-color: var(--card-background);
+  border-color: var(--card-border);
+}
+
+.hover-bg {
+  background-color: var(--hover-background);
 }

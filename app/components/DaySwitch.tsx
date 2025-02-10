@@ -12,10 +12,10 @@ export function DaySwitch() {
 
   return (
     <Link
-      href={isDay1 ? '/dia2' : '/dia1'}
-      className="px-4 py-2 rounded-lg font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+      href={pathname === '/dia1' ? '/dia2' : '/dia1'}
+      className="px-4 py-2 rounded-lg text-foreground text-lg font-semibold border border-card-border hover:bg-card-background/50 transition-colors"
     >
-      Ver {isDay1 ? 'Día 2' : 'Día 1'}
+      Ver Día {pathname === '/dia1' ? '2' : '1'}
     </Link>
   );
 } 
