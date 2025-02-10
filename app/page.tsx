@@ -23,7 +23,7 @@ export default function HomePage() {
           Organizá tu agenda para los dos días del festival más importante de Latinoamérica
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs sm:max-w-md">
+        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs sm:max-w-md mb-24">
           <Link 
             href="/dia1"
             className="flex-1 px-8 py-4 rounded-xl font-semibold text-lg bg-card-background border border-card-border hover:bg-card-background/50 transition-colors group"
