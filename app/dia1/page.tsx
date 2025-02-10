@@ -10,7 +10,7 @@ export default function Day1Page() {
       <Schedule
         data={DATA_DAY1}
         day={1}
-        title="Cosquín Rock 2024 - Día 1"
+        title="Cosquín Rock 2025 - Día 1"
         date="15 de Febrero"
         nextDayDate="16 de Febrero"
       />

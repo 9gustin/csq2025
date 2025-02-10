@@ -89,7 +89,7 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showOnlyAgenda, setShowOnlyAgenda] = useState(() => {
     if (typeof window === 'undefined') return false;
-    const saved = localStorage.getItem(`cosquin-rock-2024-show-only-agenda-day-${day}`);
+    const saved = localStorage.getItem(`agenda-cr25-show-only-agenda-day-${day}`);
     return saved ? JSON.parse(saved) : false;
   });
   const { selectedShows, toggleShow, isSelected, clearAgenda } = useAgenda();
@@ -118,7 +118,7 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
 
   useEffect(() => {
     localStorage.setItem(
-      `cosquin-rock-2024-show-only-agenda-day-${day}`,
+      `agenda-cr25-show-only-agenda-day-${day}`,
       JSON.stringify(showOnlyAgenda)
     );
   }, [showOnlyAgenda, day]);
@@ -153,7 +153,7 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
 
   const isShowDay = currentTime.getDate() === (day === 1 ? 15 : 16) && 
                    currentTime.getMonth() === 1 && // 1 = February
-                   currentTime.getFullYear() === 2024;
+                   currentTime.getFullYear() === 2025;
 
   const timeGroups = useMemo(() => {
     return groupShowsByTimeWindow(sortedShows, formatTime);

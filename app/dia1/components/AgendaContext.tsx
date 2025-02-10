@@ -16,7 +16,7 @@ type AgendaContextType = {
   day: 1 | 2;
 };
 
-const STORAGE_KEY_BASE = 'cosquin-rock-2024-agenda';
+const STORAGE_KEY_BASE = 'agenda-cr25';
 
 const AgendaContext = createContext<AgendaContextType | undefined>(undefined);
 

@@ -9,8 +9,16 @@ const barlowSemiCondensed = Barlow_Semi_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "Cosquín Rock 2024",
-  description: "Agenda para Cosquín Rock 2024",
+  title: "Agenda CR25 by @9gustin",
+  description: "Agenda para Cosquín Rock 2025",
+  manifest: '/manifest.json',
+  themeColor: '#006533',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: "Agenda CR25 by @9gustin",
+  },
 };
 
 export default function RootLayout({
@@ -20,6 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      </head>
       <body className={`${barlowSemiCondensed.variable} font-barlow antialiased`}>
         {children}
       </body>

@@ -2,14 +2,21 @@
 
 import Link from 'next/link';
 import { PageLayout } from './components/PageLayout';
+import { useEffect } from 'react';
+import { registerServiceWorker } from './pwa';
+import { InstagramIcon, LinkedInIcon } from './components/icons/Social';
 
 export default function HomePage() {
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
   return (
     <PageLayout>
       <div className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4">
         <h1 className="text-6xl sm:text-7xl font-bold mb-6 text-foreground tracking-tight">
-          Cosquín Rock
-          <span className="text-brand-primary"> 2024</span>
+          Agenda <span className="text-brand-primary">Cosquín Rock</span>
+          <span className="text-brand-secondary"> 2025</span>
         </h1>
         
         <p className="text-xl text-foreground/60 mb-12 max-w-2xl">
@@ -38,6 +45,42 @@ export default function HomePage() {
         <div className="absolute top-0 right-0 w-48 h-48 bg-brand-secondary/5 blur-3xl rounded-full -z-10" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand-primary/5 blur-3xl rounded-full -z-10" />
       </div>
+
+      <footer className="fixed bottom-0 left-0 w-full py-4 px-6 bg-gradient-to-t from-background via-background/95 to-transparent">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="text-foreground/60 text-sm">
+            by{' '}
+            <a 
+              href="https://twitter.com/9gustin" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-brand-primary hover:opacity-80 transition-opacity"
+            >
+              @9gustin
+            </a>
+          </div>
+          <div className="flex gap-4">
+            <a 
+              href="https://linkedin.com/in/9gustin" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground/40 hover:text-foreground transition-colors"
+              aria-label="LinkedIn Profile"
+            >
+              <LinkedInIcon />
+            </a>
+            <a 
+              href="https://instagram.com/9gustin" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground/40 hover:text-foreground transition-colors"
+              aria-label="Instagram Profile"
+            >
+              <InstagramIcon />
+            </a>
+          </div>
+        </div>
+      </footer>
     </PageLayout>
   );
 } 
