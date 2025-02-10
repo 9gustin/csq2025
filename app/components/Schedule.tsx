@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, Suspense } from 'react';
 import { AgendaProvider, useAgenda } from '../dia1/components/AgendaContext';
 import Link from 'next/link';
 import { DaySwitch } from './DaySwitch';
@@ -434,8 +434,14 @@ function ScheduleContent({ data, day, title, date, nextDayDate }: ScheduleProps)
 
 export function Schedule(props: ScheduleProps) {
   return (
-    <AgendaProvider day={props.day}>
-      <ScheduleContent {...props} />
-    </AgendaProvider>
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-foreground/60">Cargando...</div>
+      </div>
+    }>
+      <AgendaProvider day={props.day}>
+        <ScheduleContent {...props} />
+      </AgendaProvider>
+    </Suspense>
   );
 } 
